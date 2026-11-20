@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>章 0 · 旋转的语言：从欧拉角到四元数 · 蒙皮图谱 Plus</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%238c2f1e' stroke-width='6'/%3E%3Ccircle cx='32' cy='32' r='8' fill='%238c2f1e'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <style>
+  :root{--paper:#f6f1e4;--card:#fdfaf2;--ink:#241e15;--ink2:#5d5342;--ink3:#8b8069;--line:#e0d6c0;--acc:#8c2f1e;--blue:#3a5570;--soft:rgba(140,47,30,.07);--side-w:238px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:Georgia,"Noto Serif SC","Source Han Serif SC",serif;font-size:14.5px;line-height:1.74}
+  a{color:var(--acc)}
+  .frame{display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);min-height:100vh}
+  .side{position:sticky;top:0;height:100vh;overflow:auto;background:#efe7d3;border-right:1px solid var(--line);padding:18px 14px 24px}
+  .side-brand{display:block;text-decoration:none;color:var(--ink);border-bottom:2px solid var(--acc);padding-bottom:10px;margin-bottom:12px}
+  .side-brand b{font-size:19px}
+  .side-brand b sup{color:var(--acc)}
+  .side-brand small{display:block;font-size:11px;color:var(--ink3);margin-top:2px;letter-spacing:.04em}
+  .side-ch{display:flex;flex-direction:column;gap:1px;margin-bottom:12px}
+  .side-ch a{display:block;font-size:12.5px;line-height:1.4;color:var(--ink2);text-decoration:none;padding:5px 8px;border-radius:3px}
+  .side-ch a:hover{background:var(--soft);color:var(--acc)}
+  .side-ch a.cur{background:var(--acc);color:#fdf8ee;font-weight:600}
+  .side-toc-title{font-size:10.5px;letter-spacing:.12em;color:var(--ink3);text-transform:uppercase;margin:10px 0 5px}
+  .side-toc{display:flex;flex-direction:column}
+  .side-toc a{display:block;font-size:12px;line-height:1.45;color:var(--ink2);text-decoration:none;padding:3.5px 8px;border-left:2px solid var(--line)}
+  .side-toc a:hover{color:var(--acc);border-left-color:var(--acc)}
+  .side-toc a.spy{color:var(--acc);border-left-color:var(--acc);background:var(--soft);font-weight:600}
+  .side-toc a .n{color:var(--ink3);font-size:10.5px;margin-right:5px}
+  .side-prog{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center}
+  .side-prog svg{flex:none}
+  .side-prog .pt{font-size:11px;color:var(--ink2);line-height:1.5}
+  .side-foot{margin-top:14px;font-size:10.5px;color:var(--ink3);line-height:1.6}
+  .side-btn{display:none;position:fixed;left:12px;top:12px;z-index:60;border:1px solid var(--line);background:#fdfaf2;color:var(--ink);border-radius:4px;padding:6px 12px;font-size:13px;cursor:pointer;box-shadow:0 2px 10px rgba(36,30,21,.18)}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(36,30,21,.35);z-index:50}
+  @media(max-width:980px){
+    .frame{grid-template-columns:1fr}
+    .side{position:fixed;left:0;top:0;bottom:0;width:min(300px,84vw);z-index:55;transform:translateX(-102%);transition:transform .25s;box-shadow:4px 0 24px rgba(36,30,21,.18)}
+    .side.open{transform:none}
+    .side-btn{display:block}
+    .scrim.on{display:block}
+  }
+  .mainwrap{padding:24px 34px 60px;min-width:0}
+  .maincol{max-width:880px;margin:0 auto}
+  header.page-head{border-bottom:2px solid var(--ink);padding:6px 0 12px;margin-bottom:16px}
+  .kicker{font-size:11px;letter-spacing:.14em;color:var(--ink3);margin:0 0 4px}
+  h1{font-size:24px;line-height:1.25;margin:0 0 6px;font-weight:650}
+  .lead{font-size:13.5px;line-height:1.7;color:var(--ink2);margin:6px 0 0}
+  h2{font-size:16px;margin:26px 0 10px;font-weight:650}
+  .card{border:1px solid var(--line);background:var(--card);padding:12px 16px;margin:12px 0;font-size:13.5px}
+  .cb-unit{border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:3px;background:var(--card);padding:13px 17px;margin:12px 0;scroll-margin-top:16px}
+  .cb-unit:target{outline:2px solid var(--acc);outline-offset:2px}
+  .cb-head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:5px}
+  .cb-head strong{font-size:16px}
+  .cb-id{font-size:10.5px;color:var(--ink3)}
+  .badge{font-size:10.5px;letter-spacing:.05em;background:var(--soft);color:var(--acc);border-radius:3px;padding:0 6px;font-weight:600}
+  .claim{display:block;border-bottom:1px dotted var(--line);padding:2.5px 0}
+  span.claim,.reqchip,.ch-req{position:relative}
+  a.cite{display:inline-block;margin-left:3px;padding:0 7px;border-radius:999px;background:var(--soft);color:var(--acc);font-size:11.5px;font-weight:600;text-decoration:none;position:relative;cursor:pointer}
+  a.cite:hover{text-decoration:none;background:var(--acc);color:#fdf8ee}
+  a.cite.see{background:transparent;border:1px dashed var(--acc)}
+  a.cite.pinned{background:var(--acc);color:#fdf8ee}
+  .pop{display:none;position:absolute;left:0;top:calc(100% + 8px);z-index:30;width:min(470px,86vw);max-height:46vh;overflow:auto;padding:11px 13px;border:1px solid var(--line);border-radius:4px;background:#fdfaf2;color:var(--ink);font-size:12.5px;line-height:1.68;box-shadow:0 8px 30px rgba(36,30,21,.16);text-align:left}
+  a.cite:hover + .pop,a.cite:focus + .pop,a.cite.pinned + .pop{display:block}
+  a.cite.pinned + .pop{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,92vw);max-height:78vh;z-index:80;box-shadow:0 20px 70px rgba(36,30,21,.3)}
+  .pop b{color:var(--acc);font-size:10.5px;letter-spacing:.05em;display:block;margin-bottom:5px}
+  .pp-body{display:block}
+  .pp-foot{display:block;margin-top:9px;padding-top:7px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3)}
+  .pp-foot a{color:var(--acc)}
+  .pc{display:inline-block;padding:0 5px;margin-left:3px;border:1px solid var(--line);border-radius:999px;background:var(--soft);color:var(--ink2);font-style:normal;font-size:10.5px;vertical-align:baseline}
+  .toc-mini a{display:block;color:var(--ink);text-decoration:none;border-bottom:1px dotted var(--line);line-height:1.95;font-size:12.5px}
+  .toc-mini a:hover{color:var(--acc)}
+  .cb-back{margin-top:8px;font-size:12px}
+  .cb-back summary{cursor:pointer;color:var(--ink2)}
+  .cb-tag{font-size:11.5px;color:var(--ink3)}
+  .toc-list{font-size:13px;line-height:1.8}
+  .toc-list p{margin:3px 0}
+  .reqchip{font-size:11.5px;border:1px solid var(--acc);border-radius:3px;padding:0 7px;color:var(--acc)}
+  .reqchip a{color:var(--acc);text-decoration:none;border-bottom:1px dotted var(--acc)}
+  .ch-req{margin:12px 0;padding:10px 14px!important;font-size:13px}
+  .redlink{display:inline-block;margin:3px 8px 3px 0;padding:4px 10px;border:1px dashed #b3452f;border-radius:3px;color:#b3452f;font-size:12px;vertical-align:top}
+  .redlink s{text-decoration-color:rgba(179,69,47,.55);margin-right:5px}
+  .redlink small{display:block;color:var(--ink3);font-size:10.5px;margin-top:1px}
+  .progress-wrap{margin-top:8px;display:flex;align-items:center;gap:8px}
+  .progress-bar{height:6px;width:min(220px,36vw);border-radius:999px;background:var(--soft);overflow:hidden;position:relative}
+  .progress-bar::after{content:"";position:absolute;inset:0;width:0;background:var(--acc);transition:width .4s}
+  .progress-bar.p1::after{width:33%}.progress-bar.p2::after{width:66%}.progress-bar.p3::after{width:100%}
+  .labbox{margin:12px 0 4px;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#f9f4e8}
+  .lab-canvas canvas{display:block;width:100%;height:auto}
+  .lab-controls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 13px;border-top:1px solid var(--line);font-size:12.5px}
+  .lab-controls label{display:flex;gap:7px;align-items:center;white-space:nowrap}
+  .lab-controls input[type=range]{width:120px;accent-color:var(--acc)}
+  .lab-controls button{border:1px solid var(--acc);background:var(--soft);color:var(--acc);border-radius:3px;padding:2px 12px;cursor:pointer;font-size:12.5px;font-family:inherit}
+  .lab-controls button.on{background:var(--acc);color:#fdf8ee}
+  .lab-readout{padding:6px 13px 9px;font-size:12px;color:var(--ink2);border-top:1px dashed var(--line);font-variant-numeric:tabular-nums}
+  .ch-tools{margin:16px 0;padding:9px 14px!important;font-size:13px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .ch-note{flex:1;min-width:200px}
+  .ch-note textarea{width:100%;margin-top:5px;border:1px solid var(--line);border-radius:3px;padding:7px;background:var(--card);font:inherit;color:var(--ink)}
+  .ch-nav{margin:18px 0;padding:10px 14px!important;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .ch-nav .btn{border:1px solid var(--acc);background:var(--soft);color:var(--acc);border-radius:3px;padding:4px 14px;text-decoration:none;font-size:13px}
+  .ch-nav .btn:hover{background:var(--acc);color:#fdf8ee}
+  .compare td,.compare th{font-size:12.5px;padding:5px 9px}
+  .compare th{text-align:left;font-weight:600;border-bottom:1.5px solid var(--ink)}
+  .compare td{border-bottom:1px solid var(--line)}
+  .katex{font-size:1.02em}
+  .katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0;margin:8px 0}
+  .katex-display::-webkit-scrollbar{height:4px}
+  [data-reveal]{opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s}
+  [data-reveal].in{opacity:1;transform:none}
+  @media print{.side,.side-btn{display:none}.frame{display:block}}
+</style>
+</head>
+<body>
+  <button class="side-btn" onclick="document.querySelector('.side').classList.add('open');document.querySelector('.scrim').classList.add('on')">☰ 目录</button>
+  <div class="scrim" onclick="document.querySelector('.side').classList.remove('open');document.querySelector('.scrim').classList.remove('on')"></div>
+  <div class="frame">
+  <aside class="side">
+    <a class="side-brand" href="atlas_plus.html"><b>ATLAS<sup>+</sup></b><small>蒙皮图谱 Plus · 教材管线 v1.0</small></a>
+    <nav class="side-ch"><a href="atlas_plus.html">卷首 · 骨架、权重与读法</a><a href="atlas_plus_ch0.html" class="cur">章 0 · 旋转的语言：从欧拉角到四元数</a><a href="atlas_plus_ch1.html">章 1 · 直接蒙皮：LBS 与 DQS</a><a href="atlas_plus_ch2.html">章 2 · 自动蒙皮：从几何与观察</a></nav>
+    <p class="side-toc-title">本章条目</p>
+    <nav class="side-toc"><a href="#u-def-vec-tools"><span class="n">定义 1.1</span>向量工具箱：长度、投影、点乘与叉乘</a><a href="#u-def-complex"><span class="n">定义 1.2</span>复数：把平面里的两项打包</a><a href="#u-thm-complex-rot"><span class="n">性质 1.1</span>复数乘法就是平面旋转</a><a href="#u-def-rot-conv"><span class="n">定义 1.3</span>旋转约定：物体在动，坐标系不动</a><a href="#u-def-euler"><span class="n">定义 1.4</span>欧拉角：三个数，一个死角</a><a href="#u-def-rotmat"><span class="n">定义 1.5</span>旋转矩阵：九个数，不直观但可复合</a><a href="#u-ax-need-interp"><span class="n">约定 1.1</span>动画的本质是姿态插值</a><a href="#u-def-axisangle"><span class="n">定义 1.6</span>轴角：一根轴加一个转动量</a><a href="#u-thm-rodrigues"><span class="n">性质 1.2</span>Rodrigues：把图上的拆分合成一个公式</a><a href="#u-def-quat"><span class="n">定义 1.7</span>四元数：四个数，一张球面</a><a href="#u-def-hamilton"><span class="n">定义 1.8</span>Hamilton 乘法：一个标量输出加一个向量输出</a><a href="#u-def-quat-conj"><span class="n">定义 1.9</span>共轭、长度与逆：怎样把旋转撤销</a><a href="#u-thm-quat-rot"><span class="n">性质 1.3</span>用四元数转一个向量</a><a href="#u-thm-sandwich"><span class="n">性质 1.4</span>完整展开夹心：标量为什么消失，角度为什么加倍</a><a href="#u-def-slerp"><span class="n">定义 1.10</span>slerp：球面线性插值</a><a href="#u-thm-double-cover"><span class="n">性质 1.5</span>同一姿态为什么有两个四元数</a><a href="#u-thm-slerp-geo"><span class="n">性质 1.6</span>slerp 走大圆、匀角速</a><a href="#u-alg-quat-matrix"><span class="n">算法 1.1</span>四元数 → 旋转矩阵</a><a href="#u-lab-slerp"><span class="n">实验 1.1</span>实验一：欧拉插值 vs slerp 对拍</a></nav>
+    <div class="side-prog"><svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="var(--line)" stroke-width="4"/><circle id="sring" cx="20" cy="20" r="16" fill="none" stroke="var(--acc)" stroke-width="4" stroke-linecap="round" stroke-dasharray="100.5" stroke-dashoffset="100.5" transform="rotate(-90 20 20)"/></svg><div class="pt" id="sprogtext">本章未标记读完</div></div>
+    <p class="side-foot">互链教材 · 引据可回溯<br>atlas.xn--ltr42g543b.cn</p>
+  </aside>
+  <div class="mainwrap"><div class="maincol">
+  <main id="main">
+    <header class="page-head" data-reveal>
+      <p class="kicker">数字人课程第 6 周扩展 · Atlas⁺ v0.3 · 2026-10-20</p>
+      <h1>章 0 · 旋转的语言：从欧拉角到四元数</h1>
+      <p class="lead">旋转的表示与插值：欧拉角为何死角、四元数为何是球面、slerp 为何走大圆——从向量工具到夹心展开的完整推导链，全部可回溯。实验一可直接拖动。</p>
+    </header>
+    <div class="ch-req card" data-reveal><b>读本章前，应先过：</b><a class="cite chc" href="atlas_plus.html">卷首 · 骨架、权重与读法</a><span class="pop"><b>章前置 · 卷首 · 骨架、权重与读法</b><span class="pp-body toc-mini"><a href="atlas_plus.html#u-ax-reading">约定 0.1 读法约定</a> <a href="atlas_plus.html#u-ext-lecture">外部 0.1 本课第 6 周客座讲（外部）</a> <a href="atlas_plus.html#u-ext-siggraph">外部 0.2 SIGGRAPH 2014 课程：Skinning（外部）</a> <a href="atlas_plus.html#u-ext-lewis">外部 0.3 Lewis 等 2000（外部）</a> <a href="atlas_plus.html#u-ext-kavan">外部 0.4 Kavan 等 2007/2008（外部）</a> <a href="atlas_plus.html#u-ext-baran">外部 0.5 Baran &amp;amp; Popović 2007（外部）</a> <a href="atlas_plus.html#u-ext-jacobson">外部 0.6 Jacobson 等 2011（外部）</a> <a href="atlas_plus.html#u-ext-le">外部 0.7 Le &amp;amp; Deng 2012（外部）</a> <a href="atlas_plus.html#u-def-rig">定义 0.1 绑定（rig）：把几千个顶点交给几个控制</a> <a href="atlas_plus.html#u-def-skeleton">定义 0.2 骨架：存相对旋转的关节树</a> <a href="atlas_plus.html#u-def-weight">定义 0.3 蒙皮权重：每个顶点跟谁走、跟几分</a> <a href="atlas_plus.html#u-def-lbs-preview">定义 0.4 LBS 预览：加权平均各骨的提案</a></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html">跳转到该章 ↗</a></span></span><span class="cb-tag">悬浮预览该章条目；前置章可只读定义与性质，公式细节允许回头补。</span></div>
+    <section class="cb-unit" id="u-def-vec-tools" data-kind="def" data-order="13"><p class="cb-head"><span class="badge">定义 1.1</span><strong>向量工具箱：长度、投影、点乘与叉乘</strong><code class="cb-id">def-vec-tools</code></p><p><span class="claim" data-cites="u-ext-siggraph">点乘 $\mathbf{a}\cdot\mathbf{b}=\lVert\mathbf{a}\rVert\,\lVert\mathbf{b}\rVert\cos\theta$ 度量两个向量的对齐程度：$\mathbf{a}$ 在 $\mathbf{b}$ 方向上的投影长是 $(\mathbf{a}\cdot\hat{\mathbf{b}})$。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-ext-siggraph">叉乘 $\mathbf{a}\times\mathbf{b}$ 垂直于两者、模长等于平行四边形面积、方向由右手定则给定，且<strong>反对称</strong>：$\mathbf{a}\times\mathbf{b}=-\mathbf{b}\times\mathbf{a}$。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-ext-siggraph">本章全部几何都由这两件工具读出：把一个旋转拆成「不动分量 + 平面内转动」，用的正是与轴平行/垂直的投影分解；叉乘则负责在平面内造出那个正交方向。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 4 次（反链，构建期生成）</summary><p class="cb-tag">← 性质 1.2 · 性质 1.2 · 定义 1.8 · 性质 1.4</p></details></section><section class="cb-unit" id="u-def-complex" data-kind="def" data-order="14"><p class="cb-head"><span class="badge">定义 1.2</span><strong>复数：把平面里的两项打包</strong><code class="cb-id">def-complex</code></p><p><span class="claim" data-cites="u-ext-siggraph">复数 $z=a+b\,\mathrm{i}$ 用<strong>一个数</strong>装下平面上的一个向量：实部 $a$、虚部 $b$；模长 $\lVert z\rVert=\sqrt{a^2+b^2}$，辐角 $\arg z$ 是它相对实轴的转角。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-ext-siggraph">极形式 $z=r(\cos\theta+\mathrm{i}\sin\theta)$ 把「长度 + 转角」打包成一个对象——记住这个动作，四元数随后就是对「轴 + 半角」做同样的打包。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 3 次（反链，构建期生成）</summary><p class="cb-tag">← 性质 1.1 · 性质 1.1 · 定义 1.7</p></details></section><section class="cb-unit" id="u-thm-complex-rot" data-kind="thm" data-order="15"><p class="cb-head"><span class="badge">性质 1.1</span><strong>复数乘法就是平面旋转</strong><code class="cb-id">thm-complex-rot</code></p><p><span class="claim" data-cites="u-def-complex">两个单位复数相乘，辐角相加：$(\cos\alpha+\mathrm{i}\sin\alpha)(\cos\beta+\mathrm{i}\sin\beta)=\cos(\alpha+\beta)+\mathrm{i}\sin(\alpha+\beta)$——<strong>乘法结构 = 旋转结构</strong>。<a class="cite" href="atlas_plus_ch0.html#u-def-complex" data-quote="复数 $z=a+b\,\mathrm{i}$ 用 一个数 装下平面上的一个向量：">定义 1.2</a><span class="pop"><b>引据 · 定义 1.2 · 复数：把平面里的两项打包</b><span class="pp-body">复数 $z=a+b\,\mathrm{i}$ 用<strong>一个数</strong>装下平面上的一个向量：实部 $a$、虚部 $b$；模长 $\lVert z\rVert=\sqrt{a^2+b^2}$，辐角 $\arg z$ 是它相对实轴的转角。<i class="pc">外部 0.2</i> 极形式 $z=r(\cos\theta+\mathrm{i}\sin\theta)$ 把「长度 + 转角」打包成一个对象——记住这个动作，四元数随后就是对「轴 + 半角」做同样的打包。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-complex">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-def-complex">用单位复数 $\cos\theta+\mathrm{i}\sin\theta$ 去乘任何 $z$：模长不变、辐角增加 $\theta$，即绕原点旋转 $\theta$ 而不缩放。这是「用乘法表示旋转」的最简实例；三维版本不再是交换的，这正是四元数登场的位置。<a class="cite" href="atlas_plus_ch0.html#u-def-complex" data-quote="复数 $z=a+b\,\mathrm{i}$ 用 一个数 装下平面上的一个向量：">定义 1.2</a><span class="pop"><b>引据 · 定义 1.2 · 复数：把平面里的两项打包</b><span class="pp-body">复数 $z=a+b\,\mathrm{i}$ 用<strong>一个数</strong>装下平面上的一个向量：实部 $a$、虚部 $b$；模长 $\lVert z\rVert=\sqrt{a^2+b^2}$，辐角 $\arg z$ 是它相对实轴的转角。<i class="pc">外部 0.2</i> 极形式 $z=r(\cos\theta+\mathrm{i}\sin\theta)$ 把「长度 + 转角」打包成一个对象——记住这个动作，四元数随后就是对「轴 + 半角」做同样的打包。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-complex">跳转到该条目 ↗</a></span></span></span></p></section><section class="cb-unit" id="u-def-rot-conv" data-kind="def" data-order="16"><p class="cb-head"><span class="badge">定义 1.3</span><strong>旋转约定：物体在动，坐标系不动</strong><code class="cb-id">def-rot-conv</code></p><p><span class="claim" data-cites="u-ext-siggraph">同一个旋转有两种相反的记法：<strong>主动观点</strong>把旋转作用在物体上（坐标系固定），<strong>被动观点</strong>转动坐标系（物体不动），两者的公式相差一个转置（矩阵）或共轭（四元数）。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-ext-siggraph">本页全程取主动观点。不先约定这一点，后面每个公式都可能差一个符号；骨架动画默认主动——关节旋转带动物体，坐标系留在原地。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-sees="u-thm-quat-rot">四元数夹心公式的两侧各乘一次共轭，正是这一约定的产物；到那里再回头看本条。<a class="cite see" href="atlas_plus_ch0.html#u-thm-quat-rot" data-quote="把轴角打包成单位四元数 $q=\cos\tfrac{\theta}{2}+\ha">性质 1.3</a><span class="pop"><b>参见 · 性质 1.3 · 用四元数转一个向量</b><span class="pp-body">把轴角打包成单位四元数 $q=\cos\tfrac{\theta}{2}+\hat{\mathbf{u}}\sin\tfrac{\theta}{2}$（注意存的是<strong>半角</strong>）。<i class="pc">定义 1.6</i><i class="pc">定义 1.7</i> 则夹心乘积 $q\,(0,\mathbf{v})\,q^{*}$ 输出纯四元数 $(0,\mathbf{v}^{\prime})$，其中 $\mathbf{v}^{\prime}$ 就是 $\mathbf{v}$ 绕 $\hat{\mathbf{u}}$ 转 $\theta$ 的结果；连续两次旋转（先 $q_1$ 后 $q_2$）等于乘 $q_2 q_1$——复合回到乘法。完整展开见下一条。<i class="pc">定义 1.9</i><i class="pc">定义 1.8</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-thm-quat-rot">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 2 次（反链，构建期生成）</summary><p class="cb-tag">← 定义 1.4 · 定义 1.6</p></details></section><section class="cb-unit" id="u-def-euler" data-kind="def" data-order="17"><p class="cb-head"><span class="badge">定义 1.4</span><strong>欧拉角：三个数，一个死角</strong><code class="cb-id">def-euler</code></p><p><span class="claim" data-cites="u-def-rot-conv u-ext-siggraph">欧拉角用绕三根固定轴的相继旋转 $(\alpha,\beta,\gamma)$ 描述姿态，顺序需事先约定（先绕哪根、后绕哪根，结果不同）。<a class="cite" href="atlas_plus_ch0.html#u-def-rot-conv" data-quote="同一个旋转有两种相反的记法： 主动观点 把旋转作用在物体上（坐标系固定）， 被动">定义 1.3</a><span class="pop"><b>引据 · 定义 1.3 · 旋转约定：物体在动，坐标系不动</b><span class="pp-body">同一个旋转有两种相反的记法：<strong>主动观点</strong>把旋转作用在物体上（坐标系固定），<strong>被动观点</strong>转动坐标系（物体不动），两者的公式相差一个转置（矩阵）或共轭（四元数）。<i class="pc">外部 0.2</i> 本页全程取主动观点。不先约定这一点，后面每个公式都可能差一个符号；骨架动画默认主动——关节旋转带动物体，坐标系留在原地。<i class="pc">外部 0.2</i> 四元数夹心公式的两侧各乘一次共轭，正是这一约定的产物；到那里再回头看本条。<i class="pc">性质 1.3</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-rot-conv">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-ext-siggraph">当中间轴转角到达 $\pm 90^\circ$ 时，首末两根轴共线，失去一个自由度——<strong>万向锁</strong>；动画跨过这一带时插值会突然翻面。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 3 次（反链，构建期生成）</summary><p class="cb-tag">← 定义 1.5 · 定义 1.6 · 实验 1.1</p></details></section><section class="cb-unit" id="u-def-rotmat" data-kind="def" data-order="18"><p class="cb-head"><span class="badge">定义 1.5</span><strong>旋转矩阵：九个数，不直观但可复合</strong><code class="cb-id">def-rotmat</code></p><p><span class="claim" data-cites="u-ext-siggraph">旋转矩阵是 $3\times3$ 正交矩阵（列向量单位正交、行列式为 +1），全体构成群 $SO(3)$；矩阵乘法即旋转复合。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-ext-siggraph u-def-euler">它没有万向锁，但九个数带六个约束，直接对两个矩阵做线性平均通常不再正交——旋转会被平均成「带缩放的歪斜」。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus_ch0.html#u-def-euler" data-quote="欧拉角用绕三根固定轴的相继旋转 $(\alpha,\beta,\gamma)$ ">定义 1.4</a><span class="pop"><b>引据 · 定义 1.4 · 欧拉角：三个数，一个死角</b><span class="pp-body">欧拉角用绕三根固定轴的相继旋转 $(\alpha,\beta,\gamma)$ 描述姿态，顺序需事先约定（先绕哪根、后绕哪根，结果不同）。<i class="pc">定义 1.3</i><i class="pc">外部 0.2</i> 当中间轴转角到达 $\pm 90^\circ$ 时，首末两根轴共线，失去一个自由度——<strong>万向锁</strong>；动画跨过这一带时插值会突然翻面。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-euler">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 3 次（反链，构建期生成）</summary><p class="cb-tag">← 性质 2.1 · 性质 2.1 · 定义 2.6</p></details></section><section class="cb-unit" id="u-ax-need-interp" data-kind="ax" data-order="19"><p class="cb-head"><span class="badge">约定 1.1</span><strong>动画的本质是姿态插值</strong><code class="cb-id">ax-need-interp</code></p><p><span class="claim" data-origin="ax">动画在两个关键姿态之间逐帧取中间姿态，因此<strong>表示法决定插值质量</strong>：中间帧是否走短弧、是否匀角速、是否保持长度，全由表示与插值公式共同决定。本页以此为选型公理。</span></p><details class="cb-back"><summary>被引用 1 次（反链，构建期生成）</summary><p class="cb-tag">← 性质 1.6</p></details></section><section class="cb-unit" id="u-def-axisangle" data-kind="def" data-order="20"><p class="cb-head"><span class="badge">定义 1.6</span><strong>轴角：一根轴加一个转动量</strong><code class="cb-id">def-axisangle</code></p><p><span class="claim" data-cites="u-def-rot-conv u-ext-siggraph">任何 3D 旋转都等价于绕一根单位轴 $\hat{\mathbf{u}}$ 转某个角 $\theta$（欧拉旋转定理）。轴角表示直接把这两个量写下来：$(\hat{\mathbf{u}},\theta)$，四个数，无顺序约定。<a class="cite" href="atlas_plus_ch0.html#u-def-rot-conv" data-quote="同一个旋转有两种相反的记法： 主动观点 把旋转作用在物体上（坐标系固定）， 被动">定义 1.3</a><span class="pop"><b>引据 · 定义 1.3 · 旋转约定：物体在动，坐标系不动</b><span class="pp-body">同一个旋转有两种相反的记法：<strong>主动观点</strong>把旋转作用在物体上（坐标系固定），<strong>被动观点</strong>转动坐标系（物体不动），两者的公式相差一个转置（矩阵）或共轭（四元数）。<i class="pc">外部 0.2</i> 本页全程取主动观点。不先约定这一点，后面每个公式都可能差一个符号；骨架动画默认主动——关节旋转带动物体，坐标系留在原地。<i class="pc">外部 0.2</i> 四元数夹心公式的两侧各乘一次共轭，正是这一约定的产物；到那里再回头看本条。<i class="pc">性质 1.3</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-rot-conv">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-def-euler">对照欧拉角：万向锁的奇点消失了，代价是 $(\hat{\mathbf{u}},\theta)$ 不能直接线性插值——转角 $\theta$ 可以插，但两根不同的轴之间没有现成的「中间轴」。<a class="cite" href="atlas_plus_ch0.html#u-def-euler" data-quote="欧拉角用绕三根固定轴的相继旋转 $(\alpha,\beta,\gamma)$ ">定义 1.4</a><span class="pop"><b>引据 · 定义 1.4 · 欧拉角：三个数，一个死角</b><span class="pp-body">欧拉角用绕三根固定轴的相继旋转 $(\alpha,\beta,\gamma)$ 描述姿态，顺序需事先约定（先绕哪根、后绕哪根，结果不同）。<i class="pc">定义 1.3</i><i class="pc">外部 0.2</i> 当中间轴转角到达 $\pm 90^\circ$ 时，首末两根轴共线，失去一个自由度——<strong>万向锁</strong>；动画跨过这一带时插值会突然翻面。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-euler">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 2 次（反链，构建期生成）</summary><p class="cb-tag">← 性质 1.2 · 性质 1.3</p></details></section><section class="cb-unit" id="u-thm-rodrigues" data-kind="thm" data-order="21"><p class="cb-head"><span class="badge">性质 1.2</span><strong>Rodrigues：把图上的拆分合成一个公式</strong><code class="cb-id">thm-rodrigues</code></p><p><span class="claim" data-cites="u-def-axisangle u-def-vec-tools">把 $\mathbf{v}$ 拆成平行与垂直于轴 $\hat{\mathbf{u}}$ 的两块：平行分量 $\hat{\mathbf{u}}(\hat{\mathbf{u}}\cdot\mathbf{v})$ 转动时不动；垂直分量在平面内转 $\theta$，平面内的正交方向由 $\hat{\mathbf{u}}\times\mathbf{v}$ 给出。<a class="cite" href="atlas_plus_ch0.html#u-def-axisangle" data-quote="任何 3D 旋转都等价于绕一根单位轴 $\hat{\mathbf{u}}$ 转某">定义 1.6</a><span class="pop"><b>引据 · 定义 1.6 · 轴角：一根轴加一个转动量</b><span class="pp-body">任何 3D 旋转都等价于绕一根单位轴 $\hat{\mathbf{u}}$ 转某个角 $\theta$（欧拉旋转定理）。轴角表示直接把这两个量写下来：$(\hat{\mathbf{u}},\theta)$，四个数，无顺序约定。<i class="pc">定义 1.3</i><i class="pc">外部 0.2</i> 对照欧拉角：万向锁的奇点消失了，代价是 $(\hat{\mathbf{u}},\theta)$ 不能直接线性插值——转角 $\theta$ 可以插，但两根不同的轴之间没有现成的「中间轴」。<i class="pc">定义 1.4</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-axisangle">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus_ch0.html#u-def-vec-tools" data-quote="点乘 $\mathbf{a}\cdot\mathbf{b}=\lVert\mat">定义 1.1</a><span class="pop"><b>引据 · 定义 1.1 · 向量工具箱：长度、投影、点乘与叉乘</b><span class="pp-body">点乘 $\mathbf{a}\cdot\mathbf{b}=\lVert\mathbf{a}\rVert\,\lVert\mathbf{b}\rVert\cos\theta$ 度量两个向量的对齐程度：$\mathbf{a}$ 在 $\mathbf{b}$ 方向上的投影长是 $(\mathbf{a}\cdot\hat{\mathbf{b}})$。<i class="pc">外部 0.2</i> 叉乘 $\mathbf{a}\times\mathbf{b}$ 垂直于两者、模长等于平行四边形面积、方向由右手定则给定，且<strong>反对称</strong>：$\mathbf{a}\times\mathbf{b}=-\mathbf{b}\times\mathbf{a}$。<i class="pc">外部 0.2</i> 本章全部几何都由这两件工具读出：把一个旋转拆成「不动分量 + 平面内转动」，用的正是与轴平行/垂直的投影分解；叉乘则负责在平面内造出那个正交方向。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-vec-tools">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-def-vec-tools">合成三块即 Rodrigues 公式：$$\mathbf{v}^{\prime}=\mathbf{v}\cos\theta+(\hat{\mathbf{u}}\times\mathbf{v})\sin\theta+\hat{\mathbf{u}}(\hat{\mathbf{u}}\cdot\mathbf{v})(1-\cos\theta).$$ 维度检查：三项都是向量；$\theta=0$ 时后两项消失、退回 $\mathbf{v}$；$\mathbf{v}$ 平行于轴时叉乘项为零、第三项补回原向量——三个边界都对。<a class="cite" href="atlas_plus_ch0.html#u-def-vec-tools" data-quote="点乘 $\mathbf{a}\cdot\mathbf{b}=\lVert\mat">定义 1.1</a><span class="pop"><b>引据 · 定义 1.1 · 向量工具箱：长度、投影、点乘与叉乘</b><span class="pp-body">点乘 $\mathbf{a}\cdot\mathbf{b}=\lVert\mathbf{a}\rVert\,\lVert\mathbf{b}\rVert\cos\theta$ 度量两个向量的对齐程度：$\mathbf{a}$ 在 $\mathbf{b}$ 方向上的投影长是 $(\mathbf{a}\cdot\hat{\mathbf{b}})$。<i class="pc">外部 0.2</i> 叉乘 $\mathbf{a}\times\mathbf{b}$ 垂直于两者、模长等于平行四边形面积、方向由右手定则给定，且<strong>反对称</strong>：$\mathbf{a}\times\mathbf{b}=-\mathbf{b}\times\mathbf{a}$。<i class="pc">外部 0.2</i> 本章全部几何都由这两件工具读出：把一个旋转拆成「不动分量 + 平面内转动」，用的正是与轴平行/垂直的投影分解；叉乘则负责在平面内造出那个正交方向。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-vec-tools">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 1 次（反链，构建期生成）</summary><p class="cb-tag">← 性质 1.4</p></details></section><section class="cb-unit" id="u-def-quat" data-kind="def" data-order="22"><p class="cb-head"><span class="badge">定义 1.7</span><strong>四元数：四个数，一张球面</strong><code class="cb-id">def-quat</code></p><p><span class="claim" data-cites="u-ext-siggraph">四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{j} + z\,\mathbf{k}$，三个虚单位满足 $\mathbf{i}^2=\mathbf{j}^2=\mathbf{k}^2=\mathbf{i}\mathbf{j}\mathbf{k}=-1$。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-ext-siggraph u-def-complex">它是复数的升级：复数用两项打包「长度 + 转角」，四元数用四项打包「轴 + 半角」。单位四元数（$\lVert q\rVert=1$）与 3D 旋转一一对应（$q$ 与 $-q$ 表示同一旋转）；全体单位四元数构成球面 $S^3$。<a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus_ch0.html#u-def-complex" data-quote="复数 $z=a+b\,\mathrm{i}$ 用 一个数 装下平面上的一个向量：">定义 1.2</a><span class="pop"><b>引据 · 定义 1.2 · 复数：把平面里的两项打包</b><span class="pp-body">复数 $z=a+b\,\mathrm{i}$ 用<strong>一个数</strong>装下平面上的一个向量：实部 $a$、虚部 $b$；模长 $\lVert z\rVert=\sqrt{a^2+b^2}$，辐角 $\arg z$ 是它相对实轴的转角。<i class="pc">外部 0.2</i> 极形式 $z=r(\cos\theta+\mathrm{i}\sin\theta)$ 把「长度 + 转角」打包成一个对象——记住这个动作，四元数随后就是对「轴 + 半角」做同样的打包。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-complex">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 9 次（反链，构建期生成）</summary><p class="cb-tag">← 定义 1.8 · 定义 1.8 · 性质 1.3 · 定义 1.10 · 定义 1.10 · 性质 1.6 · 实验 1.1 · 定义 2.4 · 性质 3.3</p></details></section><section class="cb-unit" id="u-def-hamilton" data-kind="def" data-order="23"><p class="cb-head"><span class="badge">定义 1.8</span><strong>Hamilton 乘法：一个标量输出加一个向量输出</strong><code class="cb-id">def-hamilton</code></p><p><span class="claim" data-cites="u-def-quat">乘法表只有三条核心规则：$\mathbf{i}\mathbf{j}=\mathbf{k}$、$\mathbf{j}\mathbf{k}=\mathbf{i}$、$\mathbf{k}\mathbf{i}=\mathbf{j}$，反序相乘得负（$\mathbf{j}\mathbf{i}=-\mathbf{k}$ 等）——乘法<strong>不可交换</strong>。<a class="cite" href="atlas_plus_ch0.html#u-def-quat" data-quote="四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{">定义 1.7</a><span class="pop"><b>引据 · 定义 1.7 · 四元数：四个数，一张球面</b><span class="pp-body">四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{j} + z\,\mathbf{k}$，三个虚单位满足 $\mathbf{i}^2=\mathbf{j}^2=\mathbf{k}^2=\mathbf{i}\mathbf{j}\mathbf{k}=-1$。<i class="pc">外部 0.2</i> 它是复数的升级：复数用两项打包「长度 + 转角」，四元数用四项打包「轴 + 半角」。单位四元数（$\lVert q\rVert=1$）与 3D 旋转一一对应（$q$ 与 $-q$ 表示同一旋转）；全体单位四元数构成球面 $S^3$。<i class="pc">外部 0.2</i><i class="pc">定义 1.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-quat">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-def-quat u-def-vec-tools">把 $q=(w,\mathbf{v})$ 写成标量+向量，一般乘法是 $$(w_1,\mathbf{v}_1)(w_2,\mathbf{v}_2)=\big(w_1w_2-\mathbf{v}_1\cdot\mathbf{v}_2,\; w_1\mathbf{v}_2+w_2\mathbf{v}_1+\mathbf{v}_1\times\mathbf{v}_2\big).$$ 标量输出里的点乘（带负号）与向量输出里的叉乘，正是不可交换性的来源：纯虚单位四元数相乘 $\mathbf{i}\,\mathbf{j}=\mathbf{i}\times\mathbf{j}=\mathbf{k}$，而 $\mathbf{j}\,\mathbf{i}=-\mathbf{i}\times\mathbf{j}$。<a class="cite" href="atlas_plus_ch0.html#u-def-quat" data-quote="四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{">定义 1.7</a><span class="pop"><b>引据 · 定义 1.7 · 四元数：四个数，一张球面</b><span class="pp-body">四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{j} + z\,\mathbf{k}$，三个虚单位满足 $\mathbf{i}^2=\mathbf{j}^2=\mathbf{k}^2=\mathbf{i}\mathbf{j}\mathbf{k}=-1$。<i class="pc">外部 0.2</i> 它是复数的升级：复数用两项打包「长度 + 转角」，四元数用四项打包「轴 + 半角」。单位四元数（$\lVert q\rVert=1$）与 3D 旋转一一对应（$q$ 与 $-q$ 表示同一旋转）；全体单位四元数构成球面 $S^3$。<i class="pc">外部 0.2</i><i class="pc">定义 1.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-quat">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus_ch0.html#u-def-vec-tools" data-quote="点乘 $\mathbf{a}\cdot\mathbf{b}=\lVert\mat">定义 1.1</a><span class="pop"><b>引据 · 定义 1.1 · 向量工具箱：长度、投影、点乘与叉乘</b><span class="pp-body">点乘 $\mathbf{a}\cdot\mathbf{b}=\lVert\mathbf{a}\rVert\,\lVert\mathbf{b}\rVert\cos\theta$ 度量两个向量的对齐程度：$\mathbf{a}$ 在 $\mathbf{b}$ 方向上的投影长是 $(\mathbf{a}\cdot\hat{\mathbf{b}})$。<i class="pc">外部 0.2</i> 叉乘 $\mathbf{a}\times\mathbf{b}$ 垂直于两者、模长等于平行四边形面积、方向由右手定则给定，且<strong>反对称</strong>：$\mathbf{a}\times\mathbf{b}=-\mathbf{b}\times\mathbf{a}$。<i class="pc">外部 0.2</i> 本章全部几何都由这两件工具读出：把一个旋转拆成「不动分量 + 平面内转动」，用的正是与轴平行/垂直的投影分解；叉乘则负责在平面内造出那个正交方向。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-vec-tools">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 4 次（反链，构建期生成）</summary><p class="cb-tag">← 定义 1.9 · 定义 1.9 · 性质 1.3 · 性质 1.4</p></details></section><section class="cb-unit" id="u-def-quat-conj" data-kind="def" data-order="24"><p class="cb-head"><span class="badge">定义 1.9</span><strong>共轭、长度与逆：怎样把旋转撤销</strong><code class="cb-id">def-quat-conj</code></p><p><span class="claim" data-cites="u-def-hamilton">共轭 $q^{*}=(w,-\mathbf{v})$（三个虚分量取反）。用乘法表直接验证：$q\,q^{*}=w^2+\lVert\mathbf{v}\rVert^2=\lVert q\rVert^2$，是一个非负实数。<a class="cite" href="atlas_plus_ch0.html#u-def-hamilton" data-quote="乘法表只有三条核心规则：$\mathbf{i}\mathbf{j}=\mathb">定义 1.8</a><span class="pop"><b>引据 · 定义 1.8 · Hamilton 乘法：一个标量输出加一个向量输出</b><span class="pp-body">乘法表只有三条核心规则：$\mathbf{i}\mathbf{j}=\mathbf{k}$、$\mathbf{j}\mathbf{k}=\mathbf{i}$、$\mathbf{k}\mathbf{i}=\mathbf{j}$，反序相乘得负（$\mathbf{j}\mathbf{i}=-\mathbf{k}$ 等）——乘法<strong>不可交换</strong>。<i class="pc">定义 1.7</i> 把 $q=(w,\mathbf{v})$ 写成标量+向量，一般乘法是 $$(w_1,\mathbf{v}_1)(w_2,\mathbf{v}_2)=\big(w_1w_2-\mathbf{v}_1\cdot\mathbf{v}_2,\; w_1\mathbf{v}_2+w_2\mathbf{v}_1+\mathbf{v}_1\times\mathbf{v}_2\big).$$ 标量输出里的点乘（带负号）与向量输出里的叉乘，正是不可交换性的来源：纯虚单位四元数相乘 $\mathbf{i}\,\mathbf{j}=\mathbf{i}\times\mathbf{j}=\mathbf{k}$，而 $\mathbf{j}\,\mathbf{i}=-\mathbf{i}\times\mathbf{j}$。<i class="pc">定义 1.7</i><i class="pc">定义 1.1</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-hamilton">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-def-hamilton">因此单位四元数的逆就是共轭：$q^{-1}=q^{*}$，「撤销一次旋转」在代数上就是右乘 $q^{*}$——这个身份是下一节夹心公式的右半边。<a class="cite" href="atlas_plus_ch0.html#u-def-hamilton" data-quote="乘法表只有三条核心规则：$\mathbf{i}\mathbf{j}=\mathb">定义 1.8</a><span class="pop"><b>引据 · 定义 1.8 · Hamilton 乘法：一个标量输出加一个向量输出</b><span class="pp-body">乘法表只有三条核心规则：$\mathbf{i}\mathbf{j}=\mathbf{k}$、$\mathbf{j}\mathbf{k}=\mathbf{i}$、$\mathbf{k}\mathbf{i}=\mathbf{j}$，反序相乘得负（$\mathbf{j}\mathbf{i}=-\mathbf{k}$ 等）——乘法<strong>不可交换</strong>。<i class="pc">定义 1.7</i> 把 $q=(w,\mathbf{v})$ 写成标量+向量，一般乘法是 $$(w_1,\mathbf{v}_1)(w_2,\mathbf{v}_2)=\big(w_1w_2-\mathbf{v}_1\cdot\mathbf{v}_2,\; w_1\mathbf{v}_2+w_2\mathbf{v}_1+\mathbf{v}_1\times\mathbf{v}_2\big).$$ 标量输出里的点乘（带负号）与向量输出里的叉乘，正是不可交换性的来源：纯虚单位四元数相乘 $\mathbf{i}\,\mathbf{j}=\mathbf{i}\times\mathbf{j}=\mathbf{k}$，而 $\mathbf{j}\,\mathbf{i}=-\mathbf{i}\times\mathbf{j}$。<i class="pc">定义 1.7</i><i class="pc">定义 1.1</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-hamilton">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 2 次（反链，构建期生成）</summary><p class="cb-tag">← 性质 1.3 · 性质 1.4</p></details></section><section class="cb-unit" id="u-thm-quat-rot" data-kind="thm" data-order="25"><p class="cb-head"><span class="badge">性质 1.3</span><strong>用四元数转一个向量</strong><code class="cb-id">thm-quat-rot</code></p><p><span class="claim" data-cites="u-def-axisangle u-def-quat">把轴角打包成单位四元数 $q=\cos\tfrac{\theta}{2}+\hat{\mathbf{u}}\sin\tfrac{\theta}{2}$（注意存的是<strong>半角</strong>）。<a class="cite" href="atlas_plus_ch0.html#u-def-axisangle" data-quote="任何 3D 旋转都等价于绕一根单位轴 $\hat{\mathbf{u}}$ 转某">定义 1.6</a><span class="pop"><b>引据 · 定义 1.6 · 轴角：一根轴加一个转动量</b><span class="pp-body">任何 3D 旋转都等价于绕一根单位轴 $\hat{\mathbf{u}}$ 转某个角 $\theta$（欧拉旋转定理）。轴角表示直接把这两个量写下来：$(\hat{\mathbf{u}},\theta)$，四个数，无顺序约定。<i class="pc">定义 1.3</i><i class="pc">外部 0.2</i> 对照欧拉角：万向锁的奇点消失了，代价是 $(\hat{\mathbf{u}},\theta)$ 不能直接线性插值——转角 $\theta$ 可以插，但两根不同的轴之间没有现成的「中间轴」。<i class="pc">定义 1.4</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-axisangle">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus_ch0.html#u-def-quat" data-quote="四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{">定义 1.7</a><span class="pop"><b>引据 · 定义 1.7 · 四元数：四个数，一张球面</b><span class="pp-body">四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{j} + z\,\mathbf{k}$，三个虚单位满足 $\mathbf{i}^2=\mathbf{j}^2=\mathbf{k}^2=\mathbf{i}\mathbf{j}\mathbf{k}=-1$。<i class="pc">外部 0.2</i> 它是复数的升级：复数用两项打包「长度 + 转角」，四元数用四项打包「轴 + 半角」。单位四元数（$\lVert q\rVert=1$）与 3D 旋转一一对应（$q$ 与 $-q$ 表示同一旋转）；全体单位四元数构成球面 $S^3$。<i class="pc">外部 0.2</i><i class="pc">定义 1.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-quat">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-def-quat-conj u-def-hamilton">则夹心乘积 $q\,(0,\mathbf{v})\,q^{*}$ 输出纯四元数 $(0,\mathbf{v}^{\prime})$，其中 $\mathbf{v}^{\prime}$ 就是 $\mathbf{v}$ 绕 $\hat{\mathbf{u}}$ 转 $\theta$ 的结果；连续两次旋转（先 $q_1$ 后 $q_2$）等于乘 $q_2 q_1$——复合回到乘法。完整展开见下一条。<a class="cite" href="atlas_plus_ch0.html#u-def-quat-conj" data-quote="共轭 $q^{*}=(w,-\mathbf{v})$（三个虚分量取反）。用乘法表">定义 1.9</a><span class="pop"><b>引据 · 定义 1.9 · 共轭、长度与逆：怎样把旋转撤销</b><span class="pp-body">共轭 $q^{*}=(w,-\mathbf{v})$（三个虚分量取反）。用乘法表直接验证：$q\,q^{*}=w^2+\lVert\mathbf{v}\rVert^2=\lVert q\rVert^2$，是一个非负实数。<i class="pc">定义 1.8</i> 因此单位四元数的逆就是共轭：$q^{-1}=q^{*}$，「撤销一次旋转」在代数上就是右乘 $q^{*}$——这个身份是下一节夹心公式的右半边。<i class="pc">定义 1.8</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-quat-conj">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus_ch0.html#u-def-hamilton" data-quote="乘法表只有三条核心规则：$\mathbf{i}\mathbf{j}=\mathb">定义 1.8</a><span class="pop"><b>引据 · 定义 1.8 · Hamilton 乘法：一个标量输出加一个向量输出</b><span class="pp-body">乘法表只有三条核心规则：$\mathbf{i}\mathbf{j}=\mathbf{k}$、$\mathbf{j}\mathbf{k}=\mathbf{i}$、$\mathbf{k}\mathbf{i}=\mathbf{j}$，反序相乘得负（$\mathbf{j}\mathbf{i}=-\mathbf{k}$ 等）——乘法<strong>不可交换</strong>。<i class="pc">定义 1.7</i> 把 $q=(w,\mathbf{v})$ 写成标量+向量，一般乘法是 $$(w_1,\mathbf{v}_1)(w_2,\mathbf{v}_2)=\big(w_1w_2-\mathbf{v}_1\cdot\mathbf{v}_2,\; w_1\mathbf{v}_2+w_2\mathbf{v}_1+\mathbf{v}_1\times\mathbf{v}_2\big).$$ 标量输出里的点乘（带负号）与向量输出里的叉乘，正是不可交换性的来源：纯虚单位四元数相乘 $\mathbf{i}\,\mathbf{j}=\mathbf{i}\times\mathbf{j}=\mathbf{k}$，而 $\mathbf{j}\,\mathbf{i}=-\mathbf{i}\times\mathbf{j}$。<i class="pc">定义 1.7</i><i class="pc">定义 1.1</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-hamilton">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 4 次（反链，构建期生成）</summary><p class="cb-tag">← 性质 1.5 · 性质 1.6 · 算法 1.1 · 定义 1.3（参见）</p></details></section><section class="cb-unit" id="u-thm-sandwich" data-kind="thm" data-order="26"><p class="cb-head"><span class="badge">性质 1.4</span><strong>完整展开夹心：标量为什么消失，角度为什么加倍</strong><code class="cb-id">thm-sandwich</code></p><p><span class="claim" data-cites="u-def-hamilton u-def-quat-conj">把 $q=(c,\,\hat{\mathbf{u}}s)$（$c=\cos\tfrac{\theta}{2}$，$s=\sin\tfrac{\theta}{2}$）与纯四元数 $(0,\mathbf{v})$ 逐步相乘：先用乘法公式算左半 $q(0,\mathbf{v})=(-s\,\hat{\mathbf{u}}\cdot\mathbf{v},\; c\,\mathbf{v}+s\,\hat{\mathbf{u}}\times\mathbf{v})$，再右乘 $q^{*}=(c,-\hat{\mathbf{u}}s)$。<a class="cite" href="atlas_plus_ch0.html#u-def-hamilton" data-quote="乘法表只有三条核心规则：$\mathbf{i}\mathbf{j}=\mathb">定义 1.8</a><span class="pop"><b>引据 · 定义 1.8 · Hamilton 乘法：一个标量输出加一个向量输出</b><span class="pp-body">乘法表只有三条核心规则：$\mathbf{i}\mathbf{j}=\mathbf{k}$、$\mathbf{j}\mathbf{k}=\mathbf{i}$、$\mathbf{k}\mathbf{i}=\mathbf{j}$，反序相乘得负（$\mathbf{j}\mathbf{i}=-\mathbf{k}$ 等）——乘法<strong>不可交换</strong>。<i class="pc">定义 1.7</i> 把 $q=(w,\mathbf{v})$ 写成标量+向量，一般乘法是 $$(w_1,\mathbf{v}_1)(w_2,\mathbf{v}_2)=\big(w_1w_2-\mathbf{v}_1\cdot\mathbf{v}_2,\; w_1\mathbf{v}_2+w_2\mathbf{v}_1+\mathbf{v}_1\times\mathbf{v}_2\big).$$ 标量输出里的点乘（带负号）与向量输出里的叉乘，正是不可交换性的来源：纯虚单位四元数相乘 $\mathbf{i}\,\mathbf{j}=\mathbf{i}\times\mathbf{j}=\mathbf{k}$，而 $\mathbf{j}\,\mathbf{i}=-\mathbf{i}\times\mathbf{j}$。<i class="pc">定义 1.7</i><i class="pc">定义 1.1</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-hamilton">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus_ch0.html#u-def-quat-conj" data-quote="共轭 $q^{*}=(w,-\mathbf{v})$（三个虚分量取反）。用乘法表">定义 1.9</a><span class="pop"><b>引据 · 定义 1.9 · 共轭、长度与逆：怎样把旋转撤销</b><span class="pp-body">共轭 $q^{*}=(w,-\mathbf{v})$（三个虚分量取反）。用乘法表直接验证：$q\,q^{*}=w^2+\lVert\mathbf{v}\rVert^2=\lVert q\rVert^2$，是一个非负实数。<i class="pc">定义 1.8</i> 因此单位四元数的逆就是共轭：$q^{-1}=q^{*}$，「撤销一次旋转」在代数上就是右乘 $q^{*}$——这个身份是下一节夹心公式的右半边。<i class="pc">定义 1.8</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-quat-conj">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-def-vec-tools">展开后标量部分是 $-s\,\hat{\mathbf{u}}\cdot\mathbf{v}\,c + c\,\mathbf{v}\cdot\hat{\mathbf{u}}\,s = 0$——两侧共轭使它精确相消，所以夹心输出永远是纯四元数，不会给向量偷加一个实部。<a class="cite" href="atlas_plus_ch0.html#u-def-vec-tools" data-quote="点乘 $\mathbf{a}\cdot\mathbf{b}=\lVert\mat">定义 1.1</a><span class="pop"><b>引据 · 定义 1.1 · 向量工具箱：长度、投影、点乘与叉乘</b><span class="pp-body">点乘 $\mathbf{a}\cdot\mathbf{b}=\lVert\mathbf{a}\rVert\,\lVert\mathbf{b}\rVert\cos\theta$ 度量两个向量的对齐程度：$\mathbf{a}$ 在 $\mathbf{b}$ 方向上的投影长是 $(\mathbf{a}\cdot\hat{\mathbf{b}})$。<i class="pc">外部 0.2</i> 叉乘 $\mathbf{a}\times\mathbf{b}$ 垂直于两者、模长等于平行四边形面积、方向由右手定则给定，且<strong>反对称</strong>：$\mathbf{a}\times\mathbf{b}=-\mathbf{b}\times\mathbf{a}$。<i class="pc">外部 0.2</i> 本章全部几何都由这两件工具读出：把一个旋转拆成「不动分量 + 平面内转动」，用的正是与轴平行/垂直的投影分解；叉乘则负责在平面内造出那个正交方向。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-vec-tools">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-thm-rodrigues">向量部分整理后恰好是 Rodrigues 三项（平行分量保留、垂直分量转 $\theta$、叉乘给出方向）：夹心里出现两次「半角」因子，相乘后正好合成整角 $\theta$——<strong>角度加倍</strong>就是「存半角、转全角」的代数根源。<a class="cite" href="atlas_plus_ch0.html#u-thm-rodrigues" data-quote="把 $\mathbf{v}$ 拆成平行与垂直于轴 $\hat{\mathbf{u">性质 1.2</a><span class="pop"><b>引据 · 性质 1.2 · Rodrigues：把图上的拆分合成一个公式</b><span class="pp-body">把 $\mathbf{v}$ 拆成平行与垂直于轴 $\hat{\mathbf{u}}$ 的两块：平行分量 $\hat{\mathbf{u}}(\hat{\mathbf{u}}\cdot\mathbf{v})$ 转动时不动；垂直分量在平面内转 $\theta$，平面内的正交方向由 $\hat{\mathbf{u}}\times\mathbf{v}$ 给出。<i class="pc">定义 1.6</i><i class="pc">定义 1.1</i> 合成三块即 Rodrigues 公式：$$\mathbf{v}^{\prime}=\mathbf{v}\cos\theta+(\hat{\mathbf{u}}\times\mathbf{v})\sin\theta+\hat{\mathbf{u}}(\hat{\mathbf{u}}\cdot\mathbf{v})(1-\cos\theta).$$ 维度检查：三项都是向量；$\theta=0$ 时后两项消失、退回 $\mathbf{v}$；$\mathbf{v}$ 平行于轴时叉乘项为零、第三项补回原向量——三个边界都对。<i class="pc">定义 1.1</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-thm-rodrigues">跳转到该条目 ↗</a></span></span></span></p></section><section class="cb-unit" id="u-def-slerp" data-kind="def" data-order="27"><p class="cb-head"><span class="badge">定义 1.10</span><strong>slerp：球面线性插值</strong><code class="cb-id">def-slerp</code></p><p><span class="claim" data-cites="u-def-quat u-ext-siggraph">取夹角 $\theta=\arccos(q_0\cdot q_1)$，插值定义为 $$\operatorname{slerp}(q_0,q_1;t)=\frac{\sin\big((1-t)\theta\big)}{\sin\theta}\,q_0+\frac{\sin(t\theta)}{\sin\theta}\,q_1\quad(t\in[0,1]).$$<a class="cite" href="atlas_plus_ch0.html#u-def-quat" data-quote="四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{">定义 1.7</a><span class="pop"><b>引据 · 定义 1.7 · 四元数：四个数，一张球面</b><span class="pp-body">四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{j} + z\,\mathbf{k}$，三个虚单位满足 $\mathbf{i}^2=\mathbf{j}^2=\mathbf{k}^2=\mathbf{i}\mathbf{j}\mathbf{k}=-1$。<i class="pc">外部 0.2</i> 它是复数的升级：复数用两项打包「长度 + 转角」，四元数用四项打包「轴 + 半角」。单位四元数（$\lVert q\rVert=1$）与 3D 旋转一一对应（$q$ 与 $-q$ 表示同一旋转）；全体单位四元数构成球面 $S^3$。<i class="pc">外部 0.2</i><i class="pc">定义 1.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-quat">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus.html#u-ext-siggraph" data-quote="Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIG">外部 0.2</a><span class="pop"><b>引据 · 外部 0.2 · SIGGRAPH 2014 课程：Skinning（外部）</b><span class="pp-body">Jacobson、Kavan、Sorkine(-Hornung) 等人的 SIGGRAPH 2014 Course《Skinning: Real-Time Shape Deformation》（skinning.org），也是官方 Atlas 引用的同名参考。本页四元数、LBS/DQS 的数学骨架以此课程讲义为外部始基。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus.html#u-ext-siggraph">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-def-quat">它就是把二维的「角度插值」搬到 $S^3$ 上：沿大圆走、按角度占比配比两端——三维旋转的中间帧问题就此有了解析解。<a class="cite" href="atlas_plus_ch0.html#u-def-quat" data-quote="四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{">定义 1.7</a><span class="pop"><b>引据 · 定义 1.7 · 四元数：四个数，一张球面</b><span class="pp-body">四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{j} + z\,\mathbf{k}$，三个虚单位满足 $\mathbf{i}^2=\mathbf{j}^2=\mathbf{k}^2=\mathbf{i}\mathbf{j}\mathbf{k}=-1$。<i class="pc">外部 0.2</i> 它是复数的升级：复数用两项打包「长度 + 转角」，四元数用四项打包「轴 + 半角」。单位四元数（$\lVert q\rVert=1$）与 3D 旋转一一对应（$q$ 与 $-q$ 表示同一旋转）；全体单位四元数构成球面 $S^3$。<i class="pc">外部 0.2</i><i class="pc">定义 1.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-quat">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 2 次（反链，构建期生成）</summary><p class="cb-tag">← 性质 1.5 · 性质 1.6</p></details></section><section class="cb-unit" id="u-thm-double-cover" data-kind="thm" data-order="28"><p class="cb-head"><span class="badge">性质 1.5</span><strong>同一姿态为什么有两个四元数</strong><code class="cb-id">thm-double-cover</code></p><p><span class="claim" data-cites="u-thm-quat-rot">$q$ 与 $-q$ 的夹心输出相同（两侧同时变号、乘积不变），但它们在 $S^3$ 上是对径的两点——$S^3$ <strong>双重覆盖</strong> $SO(3)$：每個旋转对应球面上的两个点。<a class="cite" href="atlas_plus_ch0.html#u-thm-quat-rot" data-quote="把轴角打包成单位四元数 $q=\cos\tfrac{\theta}{2}+\ha">性质 1.3</a><span class="pop"><b>引据 · 性质 1.3 · 用四元数转一个向量</b><span class="pp-body">把轴角打包成单位四元数 $q=\cos\tfrac{\theta}{2}+\hat{\mathbf{u}}\sin\tfrac{\theta}{2}$（注意存的是<strong>半角</strong>）。<i class="pc">定义 1.6</i><i class="pc">定义 1.7</i> 则夹心乘积 $q\,(0,\mathbf{v})\,q^{*}$ 输出纯四元数 $(0,\mathbf{v}^{\prime})$，其中 $\mathbf{v}^{\prime}$ 就是 $\mathbf{v}$ 绕 $\hat{\mathbf{u}}$ 转 $\theta$ 的结果；连续两次旋转（先 $q_1$ 后 $q_2$）等于乘 $q_2 q_1$——复合回到乘法。完整展开见下一条。<i class="pc">定义 1.9</i><i class="pc">定义 1.8</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-thm-quat-rot">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-def-slerp">工程后果：插值前必须检查 $q_0\cdot q_1&lt;0$ 并翻转其一，强迫 slerp 走不超过 $180^\circ$ 的短弧——否则会沿大圆绕远路，把 $10^\circ$ 的过渡做成 $350^\circ$ 的甩头。<a class="cite" href="atlas_plus_ch0.html#u-def-slerp" data-quote="取夹角 $\theta=\arccos(q_0\cdot q_1)$，插值定义为">定义 1.10</a><span class="pop"><b>引据 · 定义 1.10 · slerp：球面线性插值</b><span class="pp-body">取夹角 $\theta=\arccos(q_0\cdot q_1)$，插值定义为 $$\operatorname{slerp}(q_0,q_1;t)=\frac{\sin\big((1-t)\theta\big)}{\sin\theta}\,q_0+\frac{\sin(t\theta)}{\sin\theta}\,q_1\quad(t\in[0,1]).$$<i class="pc">定义 1.7</i><i class="pc">外部 0.2</i> 它就是把二维的「角度插值」搬到 $S^3$ 上：沿大圆走、按角度占比配比两端——三维旋转的中间帧问题就此有了解析解。<i class="pc">定义 1.7</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-slerp">跳转到该条目 ↗</a></span></span></span></p></section><section class="cb-unit" id="u-thm-slerp-geo" data-kind="thm" data-order="29"><p class="cb-head"><span class="badge">性质 1.6</span><strong>slerp 走大圆、匀角速</strong><code class="cb-id">thm-slerp-geo</code></p><p><span class="claim" data-cites="u-def-slerp u-def-quat">$\operatorname{slerp}$ 的结果始终落在 $S^3$ 上 $q_0,q_1$ 所在大圆，且转角随 $t$ 线性增长——中点恰好走到半程，全程角速度恒定。<a class="cite" href="atlas_plus_ch0.html#u-def-slerp" data-quote="取夹角 $\theta=\arccos(q_0\cdot q_1)$，插值定义为">定义 1.10</a><span class="pop"><b>引据 · 定义 1.10 · slerp：球面线性插值</b><span class="pp-body">取夹角 $\theta=\arccos(q_0\cdot q_1)$，插值定义为 $$\operatorname{slerp}(q_0,q_1;t)=\frac{\sin\big((1-t)\theta\big)}{\sin\theta}\,q_0+\frac{\sin(t\theta)}{\sin\theta}\,q_1\quad(t\in[0,1]).$$<i class="pc">定义 1.7</i><i class="pc">外部 0.2</i> 它就是把二维的「角度插值」搬到 $S^3$ 上：沿大圆走、按角度占比配比两端——三维旋转的中间帧问题就此有了解析解。<i class="pc">定义 1.7</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-slerp">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus_ch0.html#u-def-quat" data-quote="四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{">定义 1.7</a><span class="pop"><b>引据 · 定义 1.7 · 四元数：四个数，一张球面</b><span class="pp-body">四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{j} + z\,\mathbf{k}$，三个虚单位满足 $\mathbf{i}^2=\mathbf{j}^2=\mathbf{k}^2=\mathbf{i}\mathbf{j}\mathbf{k}=-1$。<i class="pc">外部 0.2</i> 它是复数的升级：复数用两项打包「长度 + 转角」，四元数用四项打包「轴 + 半角」。单位四元数（$\lVert q\rVert=1$）与 3D 旋转一一对应（$q$ 与 $-q$ 表示同一旋转）；全体单位四元数构成球面 $S^3$。<i class="pc">外部 0.2</i><i class="pc">定义 1.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-quat">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-thm-quat-rot u-ax-need-interp">对照公理：欧拉角分量各自线性插值既不走短弧也不匀角速，中点姿态可能大幅偏离。<a class="cite" href="atlas_plus_ch0.html#u-thm-quat-rot" data-quote="把轴角打包成单位四元数 $q=\cos\tfrac{\theta}{2}+\ha">性质 1.3</a><span class="pop"><b>引据 · 性质 1.3 · 用四元数转一个向量</b><span class="pp-body">把轴角打包成单位四元数 $q=\cos\tfrac{\theta}{2}+\hat{\mathbf{u}}\sin\tfrac{\theta}{2}$（注意存的是<strong>半角</strong>）。<i class="pc">定义 1.6</i><i class="pc">定义 1.7</i> 则夹心乘积 $q\,(0,\mathbf{v})\,q^{*}$ 输出纯四元数 $(0,\mathbf{v}^{\prime})$，其中 $\mathbf{v}^{\prime}$ 就是 $\mathbf{v}$ 绕 $\hat{\mathbf{u}}$ 转 $\theta$ 的结果；连续两次旋转（先 $q_1$ 后 $q_2$）等于乘 $q_2 q_1$——复合回到乘法。完整展开见下一条。<i class="pc">定义 1.9</i><i class="pc">定义 1.8</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-thm-quat-rot">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus_ch0.html#u-ax-need-interp" data-quote="动画在两个关键姿态之间逐帧取中间姿态，因此 表示法决定插值质量 ：中间帧是否走短">约定 1.1</a><span class="pop"><b>引据 · 约定 1.1 · 动画的本质是姿态插值</b><span class="pp-body">动画在两个关键姿态之间逐帧取中间姿态，因此<strong>表示法决定插值质量</strong>：中间帧是否走短弧、是否匀角速、是否保持长度，全由表示与插值公式共同决定。本页以此为选型公理。</span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-ax-need-interp">跳转到该条目 ↗</a></span></span></span></p><details class="cb-back"><summary>被引用 2 次（反链，构建期生成）</summary><p class="cb-tag">← 实验 1.1 · 实验 1.1</p></details></section><section class="cb-unit" id="u-alg-quat-matrix" data-kind="alg" data-order="30"><p class="cb-head"><span class="badge">算法 1.1</span><strong>四元数 → 旋转矩阵</strong><code class="cb-id">alg-quat-matrix</code></p><p><span class="claim" data-cites="u-thm-quat-rot">把 $q=w+x\mathbf{i}+y\mathbf{j}+z\mathbf{k}$ 展开成矩阵：$$R(q)=\begin{pmatrix}1-2(y^2+z^2)&amp;2(xy-wz)&amp;2(xz+wy)\\2(xy+wz)&amp;1-2(x^2+z^2)&amp;2(yz-wx)\\2(xz-wy)&amp;2(yz+wx)&amp;1-2(x^2+y^2)\end{pmatrix}.$$<a class="cite" href="atlas_plus_ch0.html#u-thm-quat-rot" data-quote="把轴角打包成单位四元数 $q=\cos\tfrac{\theta}{2}+\ha">性质 1.3</a><span class="pop"><b>引据 · 性质 1.3 · 用四元数转一个向量</b><span class="pp-body">把轴角打包成单位四元数 $q=\cos\tfrac{\theta}{2}+\hat{\mathbf{u}}\sin\tfrac{\theta}{2}$（注意存的是<strong>半角</strong>）。<i class="pc">定义 1.6</i><i class="pc">定义 1.7</i> 则夹心乘积 $q\,(0,\mathbf{v})\,q^{*}$ 输出纯四元数 $(0,\mathbf{v}^{\prime})$，其中 $\mathbf{v}^{\prime}$ 就是 $\mathbf{v}$ 绕 $\hat{\mathbf{u}}$ 转 $\theta$ 的结果；连续两次旋转（先 $q_1$ 后 $q_2$）等于乘 $q_2 q_1$——复合回到乘法。完整展开见下一条。<i class="pc">定义 1.9</i><i class="pc">定义 1.8</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-thm-quat-rot">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-waiver="承上启下的连接句">章 1 的骨变换要用它：四元数负责「旋转怎么表示与插值」，矩阵负责「顶点怎么被乘」。</span></p><details class="cb-back"><summary>被引用 2 次（反链，构建期生成）</summary><p class="cb-tag">← 定义 2.2 · 性质 3.3</p></details></section><section class="cb-unit" id="u-lab-slerp" data-kind="lab" data-order="31" data-req="u-def-euler u-def-slerp"><p class="cb-head"><span class="badge">实验 1.1</span><strong>实验一：欧拉插值 vs slerp 对拍</strong><code class="cb-id">lab-slerp</code><span class="reqchip">前置 <a class="cite reqc" href="atlas_plus_ch0.html#u-def-euler">定义 1.4</a><span class="pop"><b>前置 · 定义 1.4 · 欧拉角：三个数，一个死角</b><span class="pp-body">欧拉角用绕三根固定轴的相继旋转 $(\alpha,\beta,\gamma)$ 描述姿态，顺序需事先约定（先绕哪根、后绕哪根，结果不同）。<i class="pc">定义 1.3</i><i class="pc">外部 0.2</i> 当中间轴转角到达 $\pm 90^\circ$ 时，首末两根轴共线，失去一个自由度——<strong>万向锁</strong>；动画跨过这一带时插值会突然翻面。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-euler">跳转到该条目 ↗</a></span></span> <a class="cite reqc" href="atlas_plus_ch0.html#u-def-slerp">定义 1.10</a><span class="pop"><b>前置 · 定义 1.10 · slerp：球面线性插值</b><span class="pp-body">取夹角 $\theta=\arccos(q_0\cdot q_1)$，插值定义为 $$\operatorname{slerp}(q_0,q_1;t)=\frac{\sin\big((1-t)\theta\big)}{\sin\theta}\,q_0+\frac{\sin(t\theta)}{\sin\theta}\,q_1\quad(t\in[0,1]).$$<i class="pc">定义 1.7</i><i class="pc">外部 0.2</i> 它就是把二维的「角度插值」搬到 $S^3$ 上：沿大圆走、按角度占比配比两端——三维旋转的中间帧问题就此有了解析解。<i class="pc">定义 1.7</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-slerp">跳转到该条目 ↗</a></span></span></span></p><p><span class="claim" data-cites="u-thm-slerp-geo">画布中左右两个同一「L 形刚体」从同一起点姿态转到同一终点：左路对欧拉角分量做线性插值，右路对四元数做 slerp。<a class="cite" href="atlas_plus_ch0.html#u-thm-slerp-geo" data-quote="$\operatorname{slerp}$ 的结果始终落在 $S^3$ 上 $">性质 1.6</a><span class="pop"><b>引据 · 性质 1.6 · slerp 走大圆、匀角速</b><span class="pp-body">$\operatorname{slerp}$ 的结果始终落在 $S^3$ 上 $q_0,q_1$ 所在大圆，且转角随 $t$ 线性增长——中点恰好走到半程，全程角速度恒定。<i class="pc">定义 1.10</i><i class="pc">定义 1.7</i> 对照公理：欧拉角分量各自线性插值既不走短弧也不匀角速，中点姿态可能大幅偏离。<i class="pc">性质 1.3</i><i class="pc">约定 1.1</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-thm-slerp-geo">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-thm-slerp-geo u-def-euler">判读：拖动 $t$ 滑杆到中段，左路轨迹会外翻、姿态「抄近道失败」；右路沿一条稳定短弧匀速转过去。<a class="cite" href="atlas_plus_ch0.html#u-thm-slerp-geo" data-quote="$\operatorname{slerp}$ 的结果始终落在 $S^3$ 上 $">性质 1.6</a><span class="pop"><b>引据 · 性质 1.6 · slerp 走大圆、匀角速</b><span class="pp-body">$\operatorname{slerp}$ 的结果始终落在 $S^3$ 上 $q_0,q_1$ 所在大圆，且转角随 $t$ 线性增长——中点恰好走到半程，全程角速度恒定。<i class="pc">定义 1.10</i><i class="pc">定义 1.7</i> 对照公理：欧拉角分量各自线性插值既不走短弧也不匀角速，中点姿态可能大幅偏离。<i class="pc">性质 1.3</i><i class="pc">约定 1.1</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-thm-slerp-geo">跳转到该条目 ↗</a></span></span><a class="cite" href="atlas_plus_ch0.html#u-def-euler" data-quote="欧拉角用绕三根固定轴的相继旋转 $(\alpha,\beta,\gamma)$ ">定义 1.4</a><span class="pop"><b>引据 · 定义 1.4 · 欧拉角：三个数，一个死角</b><span class="pp-body">欧拉角用绕三根固定轴的相继旋转 $(\alpha,\beta,\gamma)$ 描述姿态，顺序需事先约定（先绕哪根、后绕哪根，结果不同）。<i class="pc">定义 1.3</i><i class="pc">外部 0.2</i> 当中间轴转角到达 $\pm 90^\circ$ 时，首末两根轴共线，失去一个自由度——<strong>万向锁</strong>；动画跨过这一带时插值会突然翻面。<i class="pc">外部 0.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-euler">跳转到该条目 ↗</a></span></span></span> <span class="claim" data-cites="u-def-quat">把 $t$ 定在 0.5 附近来回拖，观察左侧读数：欧拉三个分量各自过半，合成的姿态却不在两姿态的「中间」。<a class="cite" href="atlas_plus_ch0.html#u-def-quat" data-quote="四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{">定义 1.7</a><span class="pop"><b>引据 · 定义 1.7 · 四元数：四个数，一张球面</b><span class="pp-body">四元数 $q = w + x\,\mathbf{i} + y\,\mathbf{j} + z\,\mathbf{k}$，三个虚单位满足 $\mathbf{i}^2=\mathbf{j}^2=\mathbf{k}^2=\mathbf{i}\mathbf{j}\mathbf{k}=-1$。<i class="pc">外部 0.2</i> 它是复数的升级：复数用两项打包「长度 + 转角」，四元数用四项打包「轴 + 半角」。单位四元数（$\lVert q\rVert=1$）与 3D 旋转一一对应（$q$ 与 $-q$ 表示同一旋转）；全体单位四元数构成球面 $S^3$。<i class="pc">外部 0.2</i><i class="pc">定义 1.2</i></span><span class="pp-foot">点击空白或 Esc 关闭 · <a href="atlas_plus_ch0.html#u-def-quat">跳转到该条目 ↗</a></span></span></span></p><div class="labbox" data-lab="slerp"><div class="lab-canvas"><canvas></canvas></div><div class="lab-controls"></div><div class="lab-readout"></div></div></section>
+    <div class="ch-tools card" data-reveal><label class="ch-done"><input type="checkbox" class="chchk" data-ch="1"> 标记本章已读</label>
+      <details class="ch-note"><summary>本章笔记（存本机浏览器）</summary>
+      <textarea class="chnotes" data-ch="1" rows="3" placeholder="随手记……"></textarea></details></div>
+    <nav class="ch-nav card" data-reveal><a class="btn" href="atlas_plus.html">← 入口页</a> <a class="btn" href="atlas_plus.html">目录</a> <a class="btn" href="atlas_plus_ch1.html">下一章：章 1 · 直接蒙皮：LBS 与 DQS →</a></nav>
+  </main>
+  </div></div></div>
+<script>(function(){
+"use strict";
+/* ============ KaTeX：defer 脚本在 DOMContentLoaded 前执行完，此处触发最稳 ============ */
+function mathRender(){
+  if (window.renderMathInElement) {
+    window.renderMathInElement(document.body, {delimiters:[
+      {left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError:false});
+  }
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mathRender);
+else mathRender();
+window.addEventListener('load', mathRender);
+
+/* ============ 进度与笔记 ============ */
+var KEY = "atlasplus-v1";
+var store = {};
+try { store = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e) { store = {}; }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } catch(e){} }
+var chks = document.querySelectorAll(".chchk"), notes = document.querySelectorAll(".chnotes");
+chks.forEach(function(c){
+  c.checked = !!store["ch" + c.dataset.ch];
+  c.addEventListener("change", function(){ store["ch" + c.dataset.ch] = c.checked; save(); refreshProgress(); });
+});
+notes.forEach(function(t){
+  t.value = store["note" + t.dataset.ch] || "";
+  t.addEventListener("input", function(){ store["note" + t.dataset.ch] = t.value; save(); });
+});
+function refreshProgress(){
+  var done = 0, total = 0;
+  [1,2,3].forEach(function(ch){ total++; if (store["ch" + ch]) done++; });
+  var bar = document.getElementById("pbar"), txt = document.getElementById("ptext");
+  if (!bar || !txt) return;
+  if (chks.length === 1) {  // 章页：显示本章状态
+    var me = +chks[0].dataset.ch;
+    txt.textContent = store["ch" + me] ? "本章已标记读完" : "本章未标记读完";
+    bar.className = "progress-bar" + (store["ch" + me] ? " p3" : "");
+  } else {                  // 入口页：全卷进度
+    txt.textContent = "已读 " + done + " / " + total + " 章";
+    bar.className = "progress-bar p" + done;
+  }
+}
+refreshProgress();
+
+/* ============ 预览钉住：点击徽章 = 钉住居中全文预览；再点 / Esc / 点空白关闭 ============ */
+function unpinAll(){ document.querySelectorAll('a.cite.pinned').forEach(function(a){ a.classList.remove('pinned'); }); }
+document.addEventListener('click', function(e){
+  var a = e.target.closest('a.cite');
+  if (a) {
+    e.preventDefault();
+    if (a.classList.contains('pinned')) { unpinAll(); }
+    else { unpinAll(); a.classList.add('pinned'); }
+    return;
+  }
+  if (!e.target.closest('.pop')) unpinAll();
+});
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') unpinAll(); });
+
+/* ============ 数学库：3x3、四元数、对偶四元数 ============ */
+function m3id(){ return [1,0,0, 0,1,0, 0,0,1]; }
+function m3mul(a,b){ var r=new Array(9); for(var i=0;i<3;i++)for(var j=0;j<3;j++){var s=0;for(var k=0;k<3;k++)s+=a[i*3+k]*b[k*3+j];r[i*3+j]=s;} return r; }
+function m3apply(m,v){ return [m[0]*v[0]+m[1]*v[1]+m[2]*v[2], m[3]*v[0]+m[4]*v[1]+m[5]*v[2], m[6]*v[0]+m[7]*v[1]+m[8]*v[2]]; }
+function rotx(a){var c=Math.cos(a),s=Math.sin(a);return[1,0,0, 0,c,-s, 0,s,c];}
+function roty(a){var c=Math.cos(a),s=Math.sin(a);return[c,0,s, 0,1,0, -s,0,c];}
+function rotz(a){var c=Math.cos(a),s=Math.sin(a);return[c,-s,0, s,c,0, 0,0,1];}
+function eulerRxRyRz(a,b,g){ return m3mul(rotz(g), m3mul(roty(b), rotx(a))); }
+function qmul(a,b){ return [
+  a[0]*b[0]-a[1]*b[1]-a[2]*b[2]-a[3]*b[3],
+  a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2],
+  a[0]*b[2]-a[1]*b[3]+a[2]*b[0]+a[3]*b[1],
+  a[0]*b[3]+a[1]*b[2]-a[2]*b[1]+a[3]*b[0]]; }
+function qconj(q){ return [q[0],-q[1],-q[2],-q[3]]; }
+function qnorm(q){ var n=Math.hypot(q[0],q[1],q[2],q[3])||1; return [q[0]/n,q[1]/n,q[2]/n,q[3]/n]; }
+function qdot(a,b){ return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]+a[3]*b[3]; }
+function qslerp(a,b,t){
+  var d=qdot(a,b), bb=b;
+  if(d<0){ bb=[-b[0],-b[1],-b[2],-b[3]]; d=-d; }
+  if(d>0.9995){ return qnorm([a[0]+t*(bb[0]-a[0]), a[1]+t*(bb[1]-a[1]), a[2]+t*(bb[2]-a[2]), a[3]+t*(bb[3]-a[3])]); }
+  var th=Math.acos(Math.min(1,d)), s=Math.sin(th);
+  var w1=Math.sin((1-t)*th)/s, w2=Math.sin(t*th)/s;
+  return [a[0]*w1+bb[0]*w2, a[1]*w1+bb[1]*w2, a[2]*w1+bb[2]*w2, a[3]*w1+bb[3]*w2];
+}
+function qfromM(m){ // 标准 shepperd 法
+  var tr=m[0]+m[4]+m[8], q;
+  if(tr>0){ var s=Math.sqrt(tr+1)*2; q=[s/4,(m[7]-m[5])/s,(m[2]-m[6])/s,(m[3]-m[1])/s]; }
+  else if(m[0]>m[4]&&m[0]>m[8]){ var s1=Math.sqrt(1+m[0]-m[4]-m[8])*2; q=[(m[7]-m[5])/s1,0.25*s1,(m[1]+m[3])/s1,(m[2]+m[6])/s1]; }
+  else if(m[4]>m[8]){ var s2=Math.sqrt(1+m[4]-m[0]-m[8])*2; q=[(m[2]-m[6])/s2,(m[1]+m[3])/s2,0.25*s2,(m[5]+m[7])/s2]; }
+  else { var s3=Math.sqrt(1+m[8]-m[0]-m[4])*2; q=[(m[3]-m[1])/s3,(m[2]+m[6])/s3,(m[5]+m[7])/s3,0.25*s3]; }
+  return qnorm(q);
+}
+function mfromQ(q){ var w=q[0],x=q[1],y=q[2],z=q[3];
+  return [1-2*(y*y+z*z), 2*(x*y-w*z), 2*(x*z+w*y),
+          2*(x*y+w*z), 1-2*(x*x+z*z), 2*(y*z-w*x),
+          2*(x*z-w*y), 2*(y*z+w*x), 1-2*(x*x+y*y)]; }
+function qAngleBetween(a,b){ var d=Math.min(1,Math.abs(qdot(qnorm(a),qnorm(b)))); return 2*Math.acos(d); }
+function dqFromRT(R,t){
+  var qr=qfromM(R), tq=[0,t[0],t[1],t[2]], qd=qmul([0.5,0,0,0],qmul(qr,tq));
+  return [qr,qd];
+}
+function dqBlend(items,ws){
+  var r=[0,0,0,0], d=[0,0,0,0];
+  for(var i=0;i<items.length;i++){
+    var w=ws[i];
+    var sign = (qdot(r, items[i][0]) < 0 && i>0) ? -1 : 1;
+    for(var k=0;k<4;k++){ r[k]+=w*sign*items[i][0][k]; d[k]+=w*sign*items[i][1][k]; }
+  }
+  var n=Math.hypot(r[0],r[1],r[2],r[3])||1;
+  for(var k2=0;k2<4;k2++){ r[k2]/=n; d[k2]/=n; }
+  return [r,d];
+}
+function dqToRT(dq){
+  var qr=dq[0], qd=dq[1], t2=qmul(qmul([2,0,0,0],qd),qconj(qr));
+  return [mfromQ(qr), [t2[1],t2[2],t2[3]]];
+}
+
+/* ============ 画布装配 ============ */
+function setupCanvas(cv, w, h){
+  var dpr = window.devicePixelRatio||1;
+  cv.width = w*dpr; cv.height = h*dpr;
+  var ctx = cv.getContext("2d");
+  ctx.scale(dpr,dpr);
+  cv.style.aspectRatio = w + "/" + h;
+  return ctx;
+}
+function ctrl(host, label, min, max, step, val, fmt){
+  var l=document.createElement("label");
+  l.innerHTML = label + ' <input type="range" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'"> <span class="rv"></span>';
+  host.appendChild(l);
+  var inp=l.querySelector("input"), rv=l.querySelector(".rv");
+  function upd(){ rv.textContent = fmt ? fmt(+inp.value) : inp.value; }
+  inp.addEventListener("input", upd); upd();
+  return inp;
+}
+function btn(host, text){
+  var b=document.createElement("button"); b.textContent=text; host.appendChild(b); return b;
+}
+
+/* ============ 实验一：欧拉插值 vs slerp ============ */
+document.querySelectorAll('.labbox[data-lab="slerp"]').forEach(function(box){
+  var cv=box.querySelector("canvas"), ctx=setupCanvas(cv, 680, 320);
+  var ctl=box.querySelector(".lab-controls"), ro=box.querySelector(".lab-readout");
+  var PRESETS = [[75,85,-50],[120,25,105],[-60,120,40]];
+  var preset=0, t=0.35, playing=false, t0=null;
+  var tIn = ctrl(ctl, "t", 0, 1, 0.005, t, function(v){return v.toFixed(2);});
+  var pb = btn(ctl, "播放");
+  var sb = btn(ctl, "换终点姿态");
+  sb.addEventListener("click", function(){ preset=(preset+1)%PRESETS.length; render(); });
+  pb.addEventListener("click", function(){ playing=!playing; pb.classList.toggle("on",playing); if(playing){ t0=performance.now(); requestAnimationFrame(frame); } });
+  tIn.addEventListener("input", function(){ t=+tIn.value; playing=false; pb.classList.remove("on"); render(); });
+
+  var OBJ = { pole:[[0,0,0],[0,0.95,0]], flag:[[0,0.95,0],[0.52,0.88,0],[0.10,0.60,0.14]], arrow:[[0,0,0],[0.72,0,0]] };
+  var trailL=[], trailR=[];
+  function project(v,W,H,scale){ return [W/2+(v[0])*scale, H/2-(v[1])*scale]; }
+  function drawObj(ctx, R, cx, W, H, scale, color){
+    ctx.save(); ctx.translate(cx,0);
+    function seg(a,b,w){ var pa=project(m3apply(R,a),W,H,scale), pb2=project(m3apply(R,b),W,H,scale);
+      ctx.beginPath(); ctx.moveTo(pa[0],pa[1]); ctx.lineTo(pb2[0],pb2[1]); ctx.lineWidth=w; ctx.strokeStyle=color; ctx.lineCap="round"; ctx.stroke(); }
+    seg(OBJ.pole[0],OBJ.pole[1],4);
+    ctx.beginPath();
+    OBJ.flag.forEach(function(p,i){ var q=project(m3apply(R,p),W,H,scale); i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]); });
+    ctx.closePath(); ctx.fillStyle=color; ctx.globalAlpha=0.85; ctx.fill(); ctx.globalAlpha=1;
+    seg(OBJ.arrow[0],OBJ.arrow[1],3);
+    var tip=project(m3apply(R,OBJ.arrow[1]),W,H,scale);
+    ctx.beginPath(); ctx.arc(tip[0],tip[1],4,0,7); ctx.fillStyle="#8c2f1e"; ctx.fill();
+    ctx.restore();
+  }
+  function render(){
+    var e=PRESETS[preset].map(function(d){return d*Math.PI/180;});
+    var RB=eulerRxRyRz(e[0],e[1],e[2]);
+    var qB=qfromM(RB), qA=[1,0,0,0];
+    var a=e.map(function(d){return d*t;});
+    var RL=eulerRxRyRz(a[0],a[1],a[2]);
+    var qR=qslerp(qA,qB,t), RR=mfromQ(qR);
+    for(var i=0;i<=20;i++){ var tt=i/20;
+      var ee=PRESETS[preset].map(function(d){return d*Math.PI/180*tt;});
+      trailL[i]=project(m3apply(eulerRxRyRz(ee[0],ee[1],ee[2]),OBJ.arrow[1]),340,320,120);
+      trailR[i]=project(m3apply(mfromQ(qslerp(qA,qB,tt)),OBJ.arrow[1]),340,320,120);
+    }
+    ctx.clearRect(0,0,680,320);
+    ctx.font="12px system-ui"; ctx.fillStyle="#57606a";
+    ctx.fillText("欧拉角分量线性插值", 20, 22); ctx.fillText("四元数 slerp", 370, 22);
+    function trail(tr,cxoff){ ctx.beginPath(); tr.forEach(function(p,i){ var x=p[0]+cxoff; i?ctx.lineTo(x,p[1]):ctx.moveTo(x,p[1]); }); ctx.strokeStyle="rgba(140,47,30,.35)"; ctx.lineWidth=1.5; ctx.stroke(); }
+    trail(trailL,0); trail(trailR,340);
+    drawObj(ctx, RL, 0, 340, 320, 120, "#3a5570");
+    drawObj(ctx, RR, 340, 340, 320, 120, "#3a5570");
+    var dev=qAngleBetween(qfromM(RL),qR)*180/Math.PI;
+    ro.innerHTML = "t = "+t.toFixed(2)+"｜终点欧拉角 = ["+PRESETS[preset].join("°, ")+
+      "°]｜左：欧拉插值姿态　右：slerp 姿态｜两姿态夹角 <b>"+dev.toFixed(1)+"°</b>"+
+      "（虚线为箭头尖端轨迹：左侧外翻、非短弧；右侧沿大圆匀速）";
+  }
+  function frame(now){
+    if(playing && t0!==null){ var ph=((now-t0)/2600)%2; t=ph<1?ph:2-ph; tIn.value=t.toFixed(3); }
+    render();
+    if(playing) requestAnimationFrame(frame);
+  }
+  render();
+});
+
+/* ============ 实验二：LBS vs DQS 对拍 ============ */
+document.querySelectorAll('.labbox[data-lab="lbs"]').forEach(function(box){
+  var cv=box.querySelector("canvas"), ctx=setupCanvas(cv, 680, 340);
+  var ctl=box.querySelector(".lab-controls"), ro=box.querySelector(".lab-readout");
+  var phi=0, theta=100*Math.PI/180, k=2.2, playing=false, t0=null;
+  var S=[0,0,0], L1=1.1, L2=1.1;
+  var phiIn=ctrl(ctl,"肩角",-40,40,1,0,function(v){return v+"°";});
+  var thIn=ctrl(ctl,"肘角",0,140,1,100,function(v){return v+"°";});
+  var kIn=ctrl(ctl,"权重锐度 k",0.5,12,0.1,2.2,function(v){return (+v).toFixed(1);});
+  var pb=btn(ctl,"播放摆动");
+  pb.addEventListener("click",function(){ playing=!playing; pb.classList.toggle("on",playing); if(playing){t0=performance.now(); requestAnimationFrame(frame);} });
+  [phiIn,thIn,kIn].forEach(function(inp){ inp.addEventListener("input",function(){ phi=+phiIn.value*Math.PI/180; theta=+thIn.value*Math.PI/180; k=+kIn.value; playing=false; pb.classList.remove("on"); draw(); }); });
+
+  var rings=[0.35,0.7,1.1,1.5,1.85], R=0.30, PER=13;
+  var pts=[];
+  rings.forEach(function(s){ for(var i=0;i<PER;i++){ var off=-R+2*R*i/(PER-1); pts.push({s:s,off:off}); } });
+  function wf(s){ return 1/(1+Math.exp(-k*(s-1.1))); }
+  function RT2d(pivot,ang){
+    var c=Math.cos(ang),s2=Math.sin(ang);
+    return { R: [c,-s2,0, s2,c,0, 0,0,1], t: [pivot[0]-c*pivot[0]+s2*pivot[1], pivot[1]-s2*pivot[0]-c*pivot[1], 0] };
+  }
+  var TU, TF, dqs, bones={};
+  function fk(){
+    TU = RT2d(S, phi);
+    var E0=[S[0]+L1,S[1],0], Ecur=[0,0,0];
+    var c=Math.cos(phi), s2=Math.sin(phi);
+    Ecur=[c*E0[0]-s2*E0[1], s2*E0[0]+c*E0[1]];
+    TF = RT2d(Ecur, phi+theta);
+    var dU=dqFromRT(TU.R,TU.t), dF=dqFromRT(TF.R,TF.t);
+    dqs=[dU,dF];
+    bones.A=[S[0],S[1]];
+    var eu=m3apply(TF.R,E0); bones.E=[eu[0]+TF.t[0],eu[1]+TF.t[1]];
+    var T2=[S[0]+L1+L2,S[1],0], tu=m3apply(TF.R,T2); bones.T=[tu[0]+TF.t[0],tu[1]+TF.t[1]];
+  }
+  function lbs(p){ var w=wf(p.s), q=[p.s,p.off,0];
+    var a=m3apply(TU.R,q), b=m3apply(TF.R,q);
+    return [ (1-w)*(a[0]+TU.t[0])+w*(b[0]+TF.t[0]), (1-w)*(a[1]+TU.t[1])+w*(b[1]+TF.t[1]) ]; }
+  function dqsApply(p){ var w=wf(p.s);
+    var dq=dqBlend(dqs,[1-w,w]), rt=dqToRT(dq), q=[p.s,p.off,0], o=m3apply(rt[0],q);
+    return [o[0]+rt[1][0], o[1]+rt[1][1]]; }
+  function project(p,W,H,scale){ return [W/2+(p[0]-1.1)*scale, H/2-p[1]*scale]; }
+  function col(w){ var x=Math.round(60+195*w); return "rgb("+(60+140*w)+","+(90-60*w)+","+(190-120*w)+")"; }
+  function drawPanel(x0, fn, title){
+    ctx.save();
+    ctx.font="12px system-ui"; ctx.fillStyle="#57606a"; ctx.fillText(title, x0+20, 22);
+    var A=project(bones.A,340,340,110), E=project(bones.E,340,340,110), Tip=project(bones.T,340,340,110);
+    ctx.strokeStyle="#c9bfae"; ctx.lineWidth=7; ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(x0+A[0],A[1]); ctx.lineTo(x0+E[0],E[1]); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0+E[0],E[1]); ctx.lineTo(x0+Tip[0],Tip[1]); ctx.stroke();
+    ctx.strokeStyle="rgba(58,85,112,.5)"; ctx.lineWidth=1;
+    [1,-1].forEach(function(sgn){
+      ctx.beginPath(); var first=true;
+      for(var j=0;j<=40;j++){ var ss=0.15+2.15*j/40, q=fn({s:ss,off:R*sgn}), p=project(q,340,340,110);
+        first?ctx.moveTo(x0+p[0],p[1]):ctx.lineTo(x0+p[0],p[1]); first=false; }
+      ctx.stroke();
+    });
+    rings.forEach(function(s){
+      ctx.beginPath(); var pA=project(fn({s:s,off:-R}),340,340,110), pB=project(fn({s:s,off:R}),340,340,110);
+      ctx.moveTo(x0+pA[0],pA[1]); ctx.lineTo(x0+pB[0],pB[1]);
+      ctx.strokeStyle = s===1.1 ? "#8c2f1e" : "rgba(58,85,112,.65)";
+      ctx.lineWidth = s===1.1 ? 3 : 1.5; ctx.setLineDash(s===1.1?[]:[4,3]); ctx.stroke(); ctx.setLineDash([]);
+    });
+    pts.forEach(function(p){ var q=project(fn(p),340,340,110);
+      ctx.beginPath(); ctx.arc(x0+q[0],q[1],1.6,0,7); ctx.fillStyle=col(wf(p.s)); ctx.fill(); });
+    ctx.restore();
+  }
+  function segLen(fn){ var a=fn({s:1.1,off:-R}), b=fn({s:1.1,off:R}); return Math.hypot(b[0]-a[0],b[1]-a[1]); }
+  function draw(){
+    fk();
+    ctx.clearRect(0,0,680,340);
+    drawPanel(0, lbs, "LBS（线性混合矩阵）");
+    drawPanel(340, dqsApply, "DQS（混合对偶四元数）");
+    var bind=2*R, lL=segLen(lbs), lD=segLen(dqsApply), theory=Math.cos(theta/2);
+    ro.innerHTML = "肩角 "+(phi*180/Math.PI).toFixed(0)+"°｜肘角 "+(theta*180/Math.PI).toFixed(0)+
+      "°｜权重锐度 k = "+k.toFixed(1)+"（关节处前臂权重 "+wf(1.1).toFixed(2)+
+      "）｜关节横截面长度/绑定：LBS <b>"+(100*lL/bind).toFixed(0)+"%</b>（走弦）　DQS <b>"+(100*lD/bind).toFixed(0)+
+      "%</b>（走弧）｜权重对半时的理论值 cos(θ/2) = <b>"+(100*theory).toFixed(0)+"%</b>";
+  }
+  function frame(now){
+    if(playing&&t0!==null){ var ph=((now-t0)/2400)%2; var th=(ph<1?ph:2-ph)*120; theta=th*Math.PI/180; thIn.value=th.toFixed(0); }
+    draw();
+    if(playing) requestAnimationFrame(frame);
+  }
+  draw();
+});
+
+/* ============ 内联 reveal（替代外部 motion.js） ============ */
+var ro = new IntersectionObserver(function(es){
+  es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target); } });
+}, {threshold:.08});
+document.querySelectorAll('[data-reveal]').forEach(function(el){ ro.observe(el); });
+
+/* ============ 侧栏 scroll-spy ============ */
+var spyLinks = Array.prototype.slice.call(document.querySelectorAll('.side-toc a'));
+if (spyLinks.length){
+  var byId = {};
+  spyLinks.forEach(function(a){ var h = a.getAttribute('href'); if (h && h.indexOf('#u-') === 0) byId[h.slice(1)] = a; });
+  var units = Array.prototype.slice.call(document.querySelectorAll('.cb-unit'));
+  var spyTick = false;
+  function spy(){
+    spyTick = false;
+    var cur = null, ref = window.scrollY + 90;
+    units.forEach(function(u){ if (u.offsetTop <= ref) cur = u; });
+    spyLinks.forEach(function(a){ a.classList.remove('spy'); });
+    if (cur){ var a = byId[cur.id]; if (a){ a.classList.add('spy');
+      if (a.scrollIntoViewIfNeeded) a.scrollIntoViewIfNeeded(false); } }
+  }
+  window.addEventListener('scroll', function(){ if (!spyTick){ spyTick = true; requestAnimationFrame(spy); } }, {passive:true});
+  spy();
+}
+
+/* ============ 侧栏进度环 ============ */
+var ring = document.getElementById('sring'), rtext = document.getElementById('sprogtext');
+if (ring && rtext){
+  var C = 100.5;
+  function ringUpdate(){
+    var done = 0, total = 3, label;
+    [1,2,3].forEach(function(ch){ if (store['ch' + ch]) done++; });
+    if (chks.length === 1){
+      var me = +chks[0].dataset.ch;
+      label = store['ch' + me] ? '本章已读完' : '本章未读完';
+      ring.style.strokeDashoffset = store['ch' + me] ? 0 : C;
+    } else {
+      label = '已读 ' + done + ' / ' + total + ' 章';
+      ring.style.strokeDashoffset = C * (1 - done / total);
+    }
+    rtext.textContent = label;
+  }
+  var prevRefresh = refreshProgress;
+  refreshProgress = function(){ prevRefresh(); ringUpdate(); };
+  ringUpdate();
+}
+})();</script>
+</body>
+</html>
